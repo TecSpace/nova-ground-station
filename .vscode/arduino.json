@@ -1,0 +1,5 @@
+{
+    "sketch": "nova-ground-station.ino",
+    "board": "arduino:avr:pro",
+    "configuration": "cpu=16MHzatmega328"
+}
