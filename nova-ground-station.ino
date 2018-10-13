@@ -1,7 +1,7 @@
 #include <RH_RF95.h>
 #include <SPI.h>
 
-#define RFM95_CS 10
+#define RFM95_CS  10
 #define RFM95_RST 9
 #define RFM95_INT 2
 
