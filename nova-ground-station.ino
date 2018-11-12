@@ -14,24 +14,26 @@ const char* START_MODULE   = "Starting module";
 const char* SUCCESS_MODULE = "Module initialized";
 const char* FAILURE_MODULE = "Could not initialize module";
 
-void debug(const char* str){
+void printTimeLead(){
   Serial.print("[");
   Serial.print(millis()/1000.0, 3);
   Serial.print("] ");
+}
+
+void debug(const char* str){
+  printTimeLead();
   Serial.println(str);
 }
 
 void moduleStatusMessage(const char* name, const char* msg){
-  Serial.print("[");
-  Serial.print(millis()/1000.0, 3);
-  Serial.print("] ");
+  printTimeLead();
   Serial.print(name);
   Serial.print(": ");
   Serial.println(msg);
 }
 
 bool customRecv(uint8_t* buf, uint8_t* len) {
-  if(true || rf95.available() && buf && len){
+  if(rf95.available() && buf && len){
     ATOMIC_BLOCK_START;
       memcpy(buf, rf95._buf, *len);
     ATOMIC_BLOCK_END;
@@ -61,12 +63,14 @@ void initRadioSubsystem() {
     debug("Radio:   Frequency: 915.00 MHz");
   }
 
-  rf95.setModeRx();
-  rf95.spiWrite(0x1d, 0x39);  //BW: 125 kHz, CR: 4/8, implicit header
-  //rf95.spiWrite(0x1e, 0xa4);  //SF: 10, no CRC
-  //rf95.spiWrite(0x26, 0x0c);  //Mobile node, AGC on
+  rf95.spiWrite(0x1d, 0x68);  //BW: 62.5 kHz, CR: 4/8, explicit header
+  rf95.spiWrite(0x1e, 0x94);  //SF: 9
+  rf95.spiWrite(0x26, 0x0c);  //TBD
+
   rf95.setPreambleLength(6);  //Awful waste of air time, but whatever...
-  debug("Radio:   BW: 125 kHz, CR: 4/8, SF: 10,  AGC: on, CRC: off");
+  rf95.setModeRx();
+
+  debug("Radio:   BW: 125 kHz, CR: 4/8, SF: 10, AGC: on, CRC: off");
   debug("Radio:   Preamble length: 6 symbols");
 
   moduleStatusMessage("Radio", SUCCESS_MODULE);
@@ -80,8 +84,17 @@ void setup() {
 
 void loop() {
   if(rf95.recv(buf, &len)){
-    uint32_t packet_ctr = buf[0] | (buf[1] << 8);
-    Serial.println(packet_ctr);
+    uint32_t packet_ctr  = buf[0]  | (buf[1] << 8);
+    uint32_t time_boot   = buf[2]  | (buf[3] << 8) | (buf[4] << 16);
+    uint16_t temperature = buf[5]  | (buf[6] << 8);
+    uint32_t pressure    = buf[7]  | (buf[8] << 8) | (buf[9] << 16);
+    int16_t  accX        = buf[10] | (buf[11] << 8);
+    int16_t  accY        = buf[12] | (buf[13] << 8);
+    int16_t  accZ        = buf[14] | (buf[15] << 8);
+    int32_t  latitude    = buf[16] | (buf[17] << 8) | (buf[18] << 16) | (buf[19] << 24);
+    int32_t  longitude   = buf[20] | (buf[21] << 8) | (buf[22] << 16) | (buf[23] << 24);
+    int32_t  altitude    = buf[24] | (buf[25] << 8) | (buf[26] << 16);
+    uint32_t speed       = buf[27] | (buf[28] << 8) | (buf[29] << 16);
   } else {
     //Serial.println("Nothing");
   }
