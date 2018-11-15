@@ -69,7 +69,7 @@ void initRadioSubsystem() {
     debug("Radio:   Frequency: 915.00 MHz");
   }
   
-  //rf95.setModemConfig(2);
+  rf95.setModemConfig(2);
   //rf95.spiWrite(0x1d, 0x78);  //BW: 62.5 kHz, CR: 4/8, explicit header
   //rf95.spiWrite(0x1e, 0x94);  //SF: 9
   //rf95.spiWrite(0x26, 0x0c);  //TBD
